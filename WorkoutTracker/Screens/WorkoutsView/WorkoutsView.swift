@@ -8,16 +8,20 @@
 import SwiftUI
 
 struct WorkoutsView: View {
-    @State private var workouts : [Workout] = MockData.sampleWorkouts
+    @State private var workouts : [Workout] = []
     @State private var isShowingNewWorkout = false
+    @State private var isShowingWorkout = false
+    @State private var selectedWorkoutIndex : Int = -1
     
     var body: some View {
-        NavigationView {
-            ZStack {
+        ZStack {
+            NavigationView {
                 List {
                     ForEach(workouts) { workout in
                         Button {
-                            print("Workout button pressed")
+                            isShowingWorkout = true
+                            guard workouts.firstIndex(where: {$0.id == workout.id}) != nil else { return }
+                            selectedWorkoutIndex = workouts.firstIndex(where: {$0.id == workout.id})!
                         } label: {
                             Text(workout.name)
                                 .font(.title)
@@ -29,11 +33,8 @@ struct WorkoutsView: View {
                     .onDelete { (indexSet) in
                         self.workouts.remove(atOffsets: indexSet)
                     }
-                    .blur(radius: isShowingNewWorkout ? 20 : 0)
-                    .disabled(isShowingNewWorkout)
                     
                     Button {
-                        workouts.append(MockData.sampleWorkout1)
                         isShowingNewWorkout = true
                     } label: {
                         HStack {
@@ -43,13 +44,19 @@ struct WorkoutsView: View {
                     }
                     .padding()
                 }
+                .navigationTitle("Workouts 💪")
                 
-                if isShowingNewWorkout {
-                    NewWorkoutView(workout: $workouts.last!,
-                                   isShowingNewWorkout: $isShowingNewWorkout)
-                }
             }
-            .navigationTitle("Workouts 💪")
+            .blur(radius: isShowingNewWorkout ? 30 : 0)
+            .disabled(isShowingNewWorkout)
+            
+            if isShowingNewWorkout {
+                NewWorkoutView(workouts: $workouts,
+                               isShowingNewWorkout: $isShowingNewWorkout)
+            }
+            else if isShowingWorkout && selectedWorkoutIndex != -1 {
+                WorkoutView(workout: $workouts[selectedWorkoutIndex])
+            }
         }
     }
 }
