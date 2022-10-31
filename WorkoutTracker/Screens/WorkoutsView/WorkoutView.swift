@@ -15,8 +15,8 @@ struct WorkoutView: View {
     @State private var selectedExerciseIndex = -1
     
     var body: some View {
-        NavigationView {
-            ZStack {
+        ZStack {
+            NavigationView {
                 VStack {
                     Text("\(workout.description)")
                         .font(.title2)
@@ -35,13 +35,15 @@ struct WorkoutView: View {
                         }
                     }
                 }
-                
-                if isShowingExercise && selectedExerciseIndex != -1 {
-                    ExerciseView(isShowingExercise: $isShowingExercise,
-                                 exercise: $workout.exercises[selectedExerciseIndex])
-                }
+                .navigationTitle(workout.name)
             }
-            .navigationTitle(workout.name)
+            .blur(radius: isShowingExercise ? 30 : 0)
+            .disabled(isShowingExercise)
+            
+            if isShowingExercise && selectedExerciseIndex != -1 {
+                ExerciseView(isShowingExercise: $isShowingExercise,
+                             exercise: $workout.exercises[selectedExerciseIndex])
+            }
         }
     }
 }

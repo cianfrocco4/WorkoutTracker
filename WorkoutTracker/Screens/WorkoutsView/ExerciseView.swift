@@ -16,27 +16,30 @@ struct ExerciseView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Form {
-                    VStack {
-                        if data.repArray.count == exercise.numSets &&
-                            data.weightArray.count == exercise.numSets {
-                            ForEach(0..<exercise.numSets, id: \.self) { setNum in
-                                Section (header: Text("Set \(setNum)")) {
-                                    Stepper("Number of Reps = \(data.repArray[setNum])",
-                                            value: $data.repArray[setNum], in: 0...Int.max)
-                                }
-                            }
-                        }
-                        else {
-                            Text("Invalid Exercise")
+            // TODO: Research how to make each section collapsible
+            Form {
+                if data.repArray.count == exercise.numSets &&
+                    data.weightArray.count == exercise.numSets {
+                    ForEach(0..<exercise.numSets, id: \.self) { setNum in
+                        Section (header: Text("Set \(setNum + 1)")) {
+                            Stepper("Number of Reps = \(data.repArray[setNum])",
+                                    value: $data.repArray[setNum], in: 0...Int.max)
+                            
+                            Stepper("Weight = \(data.weightArray[setNum]) lbs",
+                                    value: $data.weightArray[setNum], in: 0...Int.max)
+                            
+                            TextField("Notes", text: $data.notes)
                         }
                     }
                 }
+                else {
+                    Text("Invalid Exercise")
+                }
             }
+            .listStyle(.sidebar)
             .navigationTitle("\(exercise.name)")
         }
-        .frame(width: 300, height: 375)
+        .frame(width: 300, height: 700)
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .shadow(radius: 40)
@@ -62,8 +65,14 @@ struct ExerciseView: View {
 
 struct ExerciseView_Previews: PreviewProvider {
     static var previews: some View {
-        ExerciseView(isShowingExercise: .constant(false),
-                     exercise: .constant(MockData.sampleWorkout1))
+        Group {
+            ExerciseView(isShowingExercise: .constant(false),
+                         exercise: .constant(MockData.sampleWorkout1))
+            .previewInterfaceOrientation(.portrait)
+            ExerciseView(isShowingExercise: .constant(false),
+                         exercise: .constant(MockData.sampleWorkout1))
+            .previewInterfaceOrientation(.portrait)
+        }
     }
 }
 

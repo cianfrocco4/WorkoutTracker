@@ -8,20 +8,17 @@
 import SwiftUI
 
 struct WorkoutsView: View {
-    @State private var workouts : [Workout] = []
-    @State private var isShowingNewWorkout = false
-    @State private var isShowingWorkout = false
-    @State private var selectedWorkoutIndex : Int = -1
+    @StateObject var viewModel = WorkoutsViewModel()
     
     var body: some View {
         ZStack {
             NavigationView {
                 List {
-                    ForEach(workouts) { workout in
+                    ForEach(viewModel.workouts) { workout in
                         Button {
-                            isShowingWorkout = true
-                            guard workouts.firstIndex(where: {$0.id == workout.id}) != nil else { return }
-                            selectedWorkoutIndex = workouts.firstIndex(where: {$0.id == workout.id})!
+                            viewModel.isShowingWorkout = true
+                            guard viewModel.workouts.firstIndex(where: {$0.id == workout.id}) != nil else { return }
+                            viewModel.selectedWorkoutIndex = viewModel.workouts.firstIndex(where: {$0.id == workout.id})!
                         } label: {
                             Text(workout.name)
                                 .font(.title)
@@ -31,11 +28,11 @@ struct WorkoutsView: View {
                         .padding()
                     }
                     .onDelete { (indexSet) in
-                        self.workouts.remove(atOffsets: indexSet)
+                        viewModel.workouts.remove(atOffsets: indexSet)
                     }
                     
                     Button {
-                        isShowingNewWorkout = true
+                        viewModel.isShowingNewWorkout = true
                     } label: {
                         HStack {
                             Image(systemName: "plus")
@@ -47,16 +44,19 @@ struct WorkoutsView: View {
                 .navigationTitle("Workouts 💪")
                 
             }
-            .blur(radius: isShowingNewWorkout ? 30 : 0)
-            .disabled(isShowingNewWorkout)
+            .blur(radius: viewModel.isShowingNewWorkout ? 30 : 0)
+            .disabled(viewModel.isShowingNewWorkout)
             
-            if isShowingNewWorkout {
-                NewWorkoutView(workouts: $workouts,
-                               isShowingNewWorkout: $isShowingNewWorkout)
+            if viewModel.isShowingNewWorkout {
+                NewWorkoutView(workouts: $viewModel.workouts,
+                               isShowingNewWorkout: $viewModel.isShowingNewWorkout)
             }
-            else if isShowingWorkout && selectedWorkoutIndex != -1 {
-                WorkoutView(workout: $workouts[selectedWorkoutIndex])
+            else if viewModel.isShowingWorkout && viewModel.selectedWorkoutIndex != -1 {
+                WorkoutView(workout: $viewModel.workouts[viewModel.selectedWorkoutIndex])
             }
+        }
+        .onAppear() {
+            viewModel.getWorkouts()
         }
     }
 }

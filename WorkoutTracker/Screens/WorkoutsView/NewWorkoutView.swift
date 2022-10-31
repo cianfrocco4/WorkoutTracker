@@ -10,22 +10,19 @@ import SwiftUI
 struct NewWorkoutView: View {
     @Binding var workouts : [Workout]
     @Binding var isShowingNewWorkout: Bool
-
-    @State private var alertItem : AlertItem?
-    @State private var exercises : [Exercise] = []
-    @State private var isShowingNewExercise : Bool = false
-    @State private var newWorkout = Workout()
+    
+    @StateObject var viewModel = NewWorkoutViewModel()
     
     var body: some View {
         ZStack {
             VStack {
                 Form {
                     Section (header: Text("Workout Information")){
-                        TextField("Workout Name", text: $newWorkout.name)
-                        TextField("Workout Description", text: $newWorkout.description)
+                        TextField("Workout Name", text: $viewModel.newWorkout.name)
+                        TextField("Workout Description", text: $viewModel.newWorkout.description)
                         
                         List {
-                            ForEach(exercises) { exercise in
+                            ForEach(viewModel.exercises) { exercise in
                                 Button {
                                     print("Exercise button pressed")
                                 } label: {
@@ -33,11 +30,11 @@ struct NewWorkoutView: View {
                                 }
                             }
                             .onDelete { (indexSet) in
-                                self.exercises.remove(atOffsets: indexSet)
+                                viewModel.exercises.remove(atOffsets: indexSet)
                             }
                             
                             Button {
-                                isShowingNewExercise = true
+                                viewModel.isShowingNewExercise = true
                             } label: {
                                 HStack {
                                     Image(systemName: "plus")
@@ -48,30 +45,32 @@ struct NewWorkoutView: View {
                         }
                     }
                 }
-                .blur(radius: isShowingNewExercise ? 30 : 0)
-                .disabled(isShowingNewExercise)
+                .blur(radius: viewModel.isShowingNewExercise ? 30 : 0)
+                .disabled(viewModel.isShowingNewExercise)
                 
                 Spacer()
                 
                 Button {
                     print("Pressed save exercise button")
                     
-                    if newWorkout.name != "" && !exercises.isEmpty {
-                        newWorkout.exercises = exercises
-                        workouts.append(newWorkout)
+                    if viewModel.newWorkout.name != "" && !viewModel.exercises.isEmpty {
+                        
+                        viewModel.addWorkout()
+                        viewModel.newWorkout.exercises = viewModel.exercises
+                        workouts.append(viewModel.newWorkout)
                         isShowingNewWorkout = false
                     }
                     else {
-                        alertItem = AlertContext.invalidForm
+                        viewModel.alertItem = AlertContext.invalidForm
                     }
                 } label: {
                     AppButtonLabel(title: "Save new workout")
                 }
             }
             
-            if isShowingNewExercise {
-                NewExerciseView(exercises: $exercises,
-                                isShowingNewExercise: $isShowingNewExercise)
+            if viewModel.isShowingNewExercise {
+                NewExerciseView(exercises: $viewModel.exercises,
+                                isShowingNewExercise: $viewModel.isShowingNewExercise)
             }
         }
         .overlay(alignment: .topTrailing) {
@@ -81,7 +80,7 @@ struct NewWorkoutView: View {
                 XDismissButton()
             }
         }
-        .alert(item: $alertItem) { alertItem in
+        .alert(item: $viewModel.alertItem) { alertItem in
             Alert(title: alertItem.title,
                   message: alertItem.message,
                   dismissButton: alertItem.dismissButton)
