@@ -11,47 +11,45 @@ struct NewExerciseView: View {
     @Binding var exercises: [Exercise]
     @Binding var isShowingNewExercise: Bool
     
-    @State private var alertItem : AlertItem?
-    
-    @State private var newExercise: Exercise = Exercise()
+    @StateObject var viewModel = NewExerciseViewModel()
     
     var body: some View {
         VStack {
             Form {
                 Section (header: Text("Exercise Information")) {
-                    ExerciseFieldString(field: $newExercise.name,
+                    ExerciseFieldString(field: $viewModel.newExercise.name,
                                         fieldName: "Exercise Name")
-                    ExerciseFieldString(field: $newExercise.description,
+                    ExerciseFieldString(field: $viewModel.newExercise.description,
                                         fieldName: "Exercise Description")
                     
-                    Stepper("Number of Sets = \(newExercise.numSets)",
-                            value: $newExercise.numSets, in: 0...Int.max)
-                    Stepper("Number of Reps = \(newExercise.numReps)",
-                            value: $newExercise.numReps, in: 0...Int.max)
+                    Stepper("Number of Sets = \(viewModel.newExercise.numSets)",
+                            value: $viewModel.newExercise.numSets, in: 0...Int.max)
+                    Stepper("Number of Reps = \(viewModel.newExercise.numReps)",
+                            value: $viewModel.newExercise.numReps, in: 0...Int.max)
 
                     HStack {
                         Text("Weight = ")
                         TextField("Weight",
-                                  value: $newExercise.weight,
+                                  value: $viewModel.newExercise.weight,
                                   formatter: NumberFormatter())
                     }
                 }
             }
             
             Button {
-                if newExercise.name != "" {
+                if viewModel.newExercise.name != "" {
                     if exercises.isEmpty {
-                        newExercise.id = 0
+                        viewModel.newExercise.id = 0
                     }
                     else {
-                        newExercise.id = exercises.last!.id + 1
+                        viewModel.newExercise.id = exercises.last!.id + 1
                     }
                     
-                    exercises.append(newExercise)
+                    exercises.append(viewModel.newExercise)
                     isShowingNewExercise = false
                 }
                 else {
-                    alertItem = AlertContext.invalidForm
+                    viewModel.alertItem = AlertContext.invalidForm
                 }
             } label: {
                 AppButtonLabel(title: "Save new exercise")
@@ -69,7 +67,7 @@ struct NewExerciseView: View {
                 XDismissButton()
             }
         }
-        .alert(item: $alertItem) { alertItem in
+        .alert(item: $viewModel.alertItem) { alertItem in
             Alert(title: alertItem.title,
                   message: alertItem.message,
                   dismissButton: alertItem.dismissButton)

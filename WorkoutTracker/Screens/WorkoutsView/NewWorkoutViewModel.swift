@@ -18,52 +18,12 @@ final class NewWorkoutViewModel: ObservableObject {
     @Published var newWorkout = Workout()
     
     func addWorkout() {
-        
-        guard let db = openDatabase() else { return }
-        
-        insertWorkout(db: db)
-        
-        closeDatabase(db: db)
-    }
-    
-    func openDatabase() -> OpaquePointer? {
-        
-        // Get the sqlite db file or create it if it doesn't exist
-        let fileURL = try! FileManager.default
-            .url(for: .applicationSupportDirectory,
-                 in: .userDomainMask,
-                 appropriateFor: nil,
-                 create: true)
-            .appendingPathComponent("WorkoutTracker.sqlite")
 
-        // open database
-
-        var db: OpaquePointer?
-        guard sqlite3_open(fileURL.path, &db) == SQLITE_OK else {
-            print("error opening database")
-            sqlite3_close(db)
-            return nil
-        }
-        
-        print("Susccessfully opened database: WorkoutTracker.sqlite")
-        
-        return db
-    }
-    
-    func insertWorkout(db: OpaquePointer) {
         if newWorkout.description == "" {
             newWorkout.description = "No Description."
         }
         
-        if sqlite3_exec(db, "INSERT INTO Workout (name, description) VALUES (\'" + newWorkout.name + "\', \'" + newWorkout.description + "\')", nil, nil, nil) != SQLITE_OK {
-            let errmsg = String(cString: sqlite3_errmsg(db)!)
-            print("error creating table: \(errmsg)")
-        }
-    }
-    
-    func closeDatabase(db: OpaquePointer) {
-        if sqlite3_close(db) != SQLITE_OK {
-            print("error closing database")
-        }
+        let lcDao = WorkoutDao()
+        lcDao.insertWorkout(asNewWorkout: newWorkout)
     }
 }
