@@ -34,3 +34,7 @@ struct WorkoutMockData {
     static let sampleWorkouts : [Workout] = []
     
 }
+
+final class WorkoutObject : ObservableObject {
+    @Published var workout : Workout?
+}

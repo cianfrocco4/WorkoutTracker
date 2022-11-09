@@ -18,6 +18,7 @@ final class WorkoutDao {
     
     init() {
         openDatabase()
+        setupDatabase()
     }
     
     deinit {
@@ -42,7 +43,9 @@ final class WorkoutDao {
             return
         }
         
-        print("Susccessfully opened database: WorkoutTracker.sqlite")
+        let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.applicationSupportDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
+        
+        print("Susccessfully opened database: WorkoutTracker.sqlite in: " + paths[0])
     }
     
     func insertWorkout(asNewWorkout: Workout) -> Void {
@@ -54,21 +57,18 @@ final class WorkoutDao {
     
     func setupDatabase() -> Void {
         
+        if false {
+            if sqlite3_exec(mcDatabase, "DROP TABLE IF EXISTS Workout", nil, nil, nil) != SQLITE_OK {
+                print("Failed to drpo table Workout")
+            }
+            else {
+                print("Dropped Workout table")
+            }
+        }
+        
         if mcDatabase != nil {
             // create the workout table
             if sqlite3_exec(mcDatabase, "CREATE TABLE IF NOT EXISTS Workout (id integer primary key autoincrement, name text, description text)", nil, nil, nil) != SQLITE_OK {
-                let errmsg = String(cString: sqlite3_errmsg(mcDatabase)!)
-                print("error creating table: \(errmsg)")
-            }
-            
-            // create the exercise table
-            if sqlite3_exec(mcDatabase, "CREATE TABLE IF NOT EXISTS Exercise (id integer primary key autoincrement, name text, description text)", nil, nil, nil) != SQLITE_OK {
-                let errmsg = String(cString: sqlite3_errmsg(mcDatabase)!)
-                print("error creating table: \(errmsg)")
-            }
-            
-            // create the ExerciseToWorkout table
-            if sqlite3_exec(mcDatabase, "CREATE TABLE IF NOT EXISTS ExerciseToWorkout (exerciseId integer, workoutId integer, PRIMARY KEY (exerciseId, workoutId))", nil, nil, nil) != SQLITE_OK {
                 let errmsg = String(cString: sqlite3_errmsg(mcDatabase)!)
                 print("error creating table: \(errmsg)")
             }
@@ -78,7 +78,7 @@ final class WorkoutDao {
     func selectWorkouts() -> [Workout] {
         var statement: OpaquePointer?
         
-        if sqlite3_prepare_v2(mcDatabase, "SELECT name FROM Workout", -1, &statement, nil) != SQLITE_OK {
+        if sqlite3_prepare_v2(mcDatabase, "SELECT id, name, description FROM Workout", -1, &statement, nil) != SQLITE_OK {
             let errmsg = String(cString: sqlite3_errmsg(mcDatabase)!)
             print("error preparing select: \(errmsg)")
         }
@@ -86,17 +86,36 @@ final class WorkoutDao {
         var lasWorkouts : [Workout] = []
         while sqlite3_step(statement) == SQLITE_ROW {
 
-            if let cString = sqlite3_column_text(statement, 0) {
-                let name = String(cString: cString)
-                print("name = \(name)")
+            var workout = Workout()
+
+            let id = sqlite3_column_int64(statement, 0)
+            if id >= 0 {
+                workout.id = Int(id)
                 
-                var workout = Workout()
-                workout.name = name
-                
-                lasWorkouts.append(workout)
-                
-            } else {
-                print("name not found")
+                if let cString = sqlite3_column_text(statement, 1) {
+                    let name = String(cString: cString)
+                    print("name = \(name)")
+                    
+                    workout.name = name
+                                        
+                    if let cString = sqlite3_column_text(statement, 2) {
+                        let description = String(cString: cString)
+                        print("description = \(name)")
+                        
+                        workout.description = description
+                        
+                        lasWorkouts.append(workout)
+                                        
+                    } else {
+                        print("Workout description not found")
+                    }
+                                    
+                } else {
+                    print("Workout name not found")
+                }
+            }
+            else {
+                print("Workout ID not valid: " + String(id))
             }
         }
 

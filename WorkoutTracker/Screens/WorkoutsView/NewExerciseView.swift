@@ -13,6 +13,8 @@ struct NewExerciseView: View {
     
     @StateObject var viewModel = NewExerciseViewModel()
     
+    @State var workout : Workout
+    
     var body: some View {
         VStack {
             Form {
@@ -37,19 +39,11 @@ struct NewExerciseView: View {
             }
             
             Button {
-                if viewModel.newExercise.name != "" {
-                    if exercises.isEmpty {
-                        viewModel.newExercise.id = 0
-                    }
-                    else {
-                        viewModel.newExercise.id = exercises.last!.id + 1
-                    }
-                    
+                let newId = exercises.isEmpty ? 0 : exercises.last!.id + 1
+                
+                if (viewModel.addExercise(id: newId, workout: workout)) {
                     exercises.append(viewModel.newExercise)
                     isShowingNewExercise = false
-                }
-                else {
-                    viewModel.alertItem = AlertContext.invalidForm
                 }
             } label: {
                 AppButtonLabel(title: "Save new exercise")
@@ -79,7 +73,8 @@ struct NewExerciseView: View {
 struct NewExerciseView_Previews: PreviewProvider {
     static var previews: some View {
         NewExerciseView(exercises: .constant(MockData.sampleWorkouts),
-                        isShowingNewExercise: .constant(true))
+                        isShowingNewExercise: .constant(true),
+                        workout: WorkoutMockData.sampleWorkout1)
     }
 }
 

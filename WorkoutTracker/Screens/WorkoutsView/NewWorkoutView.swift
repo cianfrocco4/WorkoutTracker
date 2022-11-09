@@ -70,7 +70,8 @@ struct NewWorkoutView: View {
             
             if viewModel.isShowingNewExercise {
                 NewExerciseView(exercises: $viewModel.exercises,
-                                isShowingNewExercise: $viewModel.isShowingNewExercise)
+                                isShowingNewExercise: $viewModel.isShowingNewExercise,
+                                workout: viewModel.newWorkout)
             }
         }
         .overlay(alignment: .topTrailing) {

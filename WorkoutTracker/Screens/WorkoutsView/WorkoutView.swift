@@ -9,11 +9,12 @@ import SwiftUI
 
 struct WorkoutView: View {
     
+    @StateObject var viewModel = WorkoutViewModel()
+
     @Binding var workout : Workout
     
-    @State private var isShowingExercise = false
-    @State private var selectedExerciseIndex = -1
-    
+    @EnvironmentObject var workoutObject : WorkoutObject
+        
     var body: some View {
         ZStack {
             NavigationView {
@@ -26,9 +27,9 @@ struct WorkoutView: View {
                         ForEach (workout.exercises) { exercise in
                             Button {
                                 print("Exercise pressed")
-                                isShowingExercise = true
+                                viewModel.isShowingExercise = true
                                 guard let lnIndex = workout.exercises.firstIndex(where: {$0.id == exercise.id}) else { return }
-                                selectedExerciseIndex = lnIndex
+                                viewModel.selectedExerciseIndex = lnIndex
                             } label: {
                                 Text("\(exercise.name)")
                             }
@@ -37,13 +38,16 @@ struct WorkoutView: View {
                 }
                 .navigationTitle(workout.name)
             }
-            .blur(radius: isShowingExercise ? 30 : 0)
-            .disabled(isShowingExercise)
+            .blur(radius: viewModel.isShowingExercise ? 30 : 0)
+            .disabled(viewModel.isShowingExercise)
             
-            if isShowingExercise && selectedExerciseIndex != -1 {
-                ExerciseView(isShowingExercise: $isShowingExercise,
-                             exercise: $workout.exercises[selectedExerciseIndex])
+            if viewModel.isShowingExercise && viewModel.selectedExerciseIndex != -1 {
+                ExerciseView(isShowingExercise: $viewModel.isShowingExercise,
+                             exercise: $workout.exercises[viewModel.selectedExerciseIndex])
             }
+        }
+        .onAppear() {
+            viewModel.getExercises(workout: &workout)
         }
     }
 }

@@ -6,12 +6,27 @@
 //
 
 import SwiftUI
-import SQLite3
-
-//internal let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
-//internal let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
 final class NewExerciseViewModel: ObservableObject {
     @Published var alertItem : AlertItem?
     @Published var newExercise: Exercise = Exercise()
+    
+    func addExercise(id : Int,
+                     workout : Workout) -> Bool {
+        var lbValid = true
+        
+        if newExercise.name != "" {
+            newExercise.id = id
+            
+            let lcDao = ExerciseDao()
+            lcDao.insertExercise(asNewExercise: newExercise,
+                                 asWorkout: workout)
+        }
+        else {
+            alertItem = AlertContext.invalidForm
+            lbValid = false
+        }
+        
+        return lbValid
+    }
 }

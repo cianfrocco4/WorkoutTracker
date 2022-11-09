@@ -8,6 +8,9 @@
 import SwiftUI
 import SQLite3
 
+let gcWorkoutDao = WorkoutDao()
+let gcExerciseDao = ExerciseDao()
+
 final class WorkoutsViewModel: ObservableObject {
     @Published var workouts : [Workout] = []
     @Published var isShowingNewWorkout = false
@@ -15,12 +18,17 @@ final class WorkoutsViewModel: ObservableObject {
     @Published var selectedWorkoutIndex : Int = -1
     
     func getWorkouts() {
+    
+        var lasWorkouts = gcWorkoutDao.selectWorkouts()
         
-        let lcDao = WorkoutDao()
-        let lasWorkouts = lcDao.selectWorkouts()
-        
-        for lsWorkout in lasWorkouts {
-            workouts.append(lsWorkout)
+        for lnWorkoutIndex in lasWorkouts.indices {
+            let lasExercises = gcExerciseDao.selectExercisesForWorkoutId(workoutId: lasWorkouts[lnWorkoutIndex].id)
+            
+            for lsExercise in lasExercises {
+                lasWorkouts[lnWorkoutIndex].exercises.append(lsExercise)
+            }
+            
+            workouts.append(lasWorkouts[lnWorkoutIndex])
         }
     }
 }
